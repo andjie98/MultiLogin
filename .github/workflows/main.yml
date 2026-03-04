@@ -2,27 +2,29 @@ name: Java CI
 
 on:
   push:
-  workflow_dispatch:
+    branches: [ "6", "1.12.2" ]  # 指定触发分支
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4  # 更新到v4
 
       - name: 'Setup JDK 8'
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: actions/setup-java@v4  # 使用官方的setup-java action
         with:
-          version: '8'
+          distribution: 'adopt'  # 指定发行版
+          java-version: '8'
           architecture: x64
 
       - name: 'Setup JDK 11'
-        uses: AdoptOpenJDK/install-jdk@v1
+        uses: actions/setup-java@v4
         with:
-          version: '11'
+          distribution: 'adopt'
+          java-version: '11'
           architecture: x64
-          targets: 'JDK_11'
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
@@ -34,20 +36,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build
-        uses: gradle/gradle-command-action@v1
-        with:
-          arguments: shadowJar
-          gradle-version: 7.2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3  # 使用最新的gradle action
+
+      - name: Build with Gradle
+        run: ./gradlew shadowJar  # 直接运行gradle命令
 
       - name: Cleanup Gradle Cache
         run: |
           rm -f ~/.gradle/caches/modules-2/modules-2.lock
           rm -f ~/.gradle/caches/modules-2/gc.properties
 
-      - name: Upload to artifact respectively
-        uses: MuirProject/upload-artifact@v2-beta
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4  # 更新到v4
         with:
-          name: '["Bukkit", "Bungee", "Velocity"]'
-          path: '["bukkit/loader/build/libs/MultiLogin-*.jar", "bungee/loader/build/libs/MultiLogin-*.jar", "velocity/loader/build/libs/MultiLogin-*.jar"]'
-          retention-days: 1
+          name: MultiLogin-Artifacts
+          path: |
+            bukkit/loader/build/libs/MultiLogin-*.jar
+            bungee/loader/build/libs/MultiLogin-*.jar
+            velocity/loader/build/libs/MultiLogin-*.jar
+          retention-days: 1  # 保留1天，如果需要更长时间可以调整
+          if-no-files-found: warn  # 如果没有找到文件，发出警告而不是失败
