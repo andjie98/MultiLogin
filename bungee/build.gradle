@@ -1,0 +1,34 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
+}
+
+repositories {
+    maven { url "https://repo.codemc.io/repository/maven-public/" }
+    maven { url "https://papermc.io/repo/repository/maven-public/" }
+}
+
+dependencies {
+    compileOnly('net.md-5:bungeecord-proxy:1.16-R0.5-20210527.222654-29') {
+        exclude group: 'net.md-5', module: 'brigadier'
+    }
+    compileOnly 'com.mojang:brigadier:1.0.18'
+    compileOnly project(":bungee:loader")
+    compileOnly project(":core:loader")
+    implementation project(":core")
+}
+
+shadowJar {
+    archiveFileName = "MultiLogin-Bungee.JarFile"
+
+    relocate 'com.mysql', 'moe.caa.multilogin.lib.com.mysql'
+    relocate 'com.zaxxer.hikari', 'moe.caa.multilogin.lib.com.zaxxer.hikari'
+    relocate 'com.google.gson', 'moe.caa.multilogin.lib.com.google.gson'
+    relocate 'com.google.protobuf', 'moe.caa.multilogin.lib.com.google.protobuf'
+    relocate 'google.protobuf', 'moe.caa.multilogin.lib.google.protobuf'
+    relocate 'org.yaml.snakeyaml', 'moe.caa.multilogin.lib.org.yaml.snakeyaml'
+    relocate 'com.mojang.brigadier', 'moe.caa.multilogin.lib.com.mojang.brigadier'
+}
+
+artifacts {
+    archives shadowJar
+}

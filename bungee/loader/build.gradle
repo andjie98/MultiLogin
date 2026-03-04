@@ -1,0 +1,42 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+repositories {
+    maven { url "https://repo.codemc.io/repository/maven-public/" }
+    maven { url "https://libraries.minecraft.net/" }
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly('net.md-5:bungeecord-proxy:1.16-R0.5-20210527.222654-29') {
+        exclude group: 'net.md-5', module: 'brigadier'
+    }
+    compileOnly 'com.mojang:brigadier:1.0.18'
+    implementation project(":core:loader")
+}
+
+shadowJar {
+    String env = System.getProperty("env", "AUTO")
+    archiveBaseName.set('MultiLogin-Bungee')
+    if (env.toLowerCase() == "final") {
+        archiveVersion.set(project.plugin_version as String)
+    } else {
+        String ver = "Build_" + ((System.currentTimeMillis() / 1000) as int)
+        archiveVersion.set(ver)
+    }
+    archiveClassifier.set("")
+    archiveExtension.set("jar")
+
+    // 包含本模块的资源文件（如 bungee.yml）
+    from sourceSets.main.output
+    
+    // 包含 bungee 模块的构建产物
+    from {
+        project(':bungee').tasks.shadowJar.archiveFile
+    }
+}
+
+artifacts {
+    archives shadowJar
+}

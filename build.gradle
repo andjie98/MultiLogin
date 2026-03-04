@@ -1,0 +1,43 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+allprojects {
+    apply plugin: "java"
+    
+    sourceCompatibility = 11
+    targetCompatibility = 11
+    
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+        options.release = 11
+    }
+}
+
+subprojects {
+    repositories {
+        maven { url "https://maven.aliyun.com/repository/public" }
+        maven { url "https://libraries.minecraft.net" }
+        mavenCentral()
+    }
+
+    dependencies {
+        compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.20'
+        annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.20'
+    }
+
+    processResources {
+        String env;
+        String ver;
+        env = System.getProperty("env", "AUTO")
+        if (env.toLowerCase() == "final") {
+            ver = (project.plugin_version as String)
+        } else {
+            ver = "Build_" + ((System.currentTimeMillis() / 1000) as int)
+        }
+
+        setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+        filter ReplaceTokens, tokens: [
+                "version": ver,
+                "author" : 'ksqeib, CaaMoe',
+        ]
+    }
+}
